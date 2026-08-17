@@ -24,7 +24,7 @@ jobs:
         run: |
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           cd "$ANDROID_SDK_ROOT"
-          curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-10993172_latest.zip" -o cmdline-tools.zip
+          curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-10993172_latest.zip
           unzip -q cmdline-tools.zip -d cmdline-tools
           # move into expected layout: cmdline-tools/latest
           mkdir -p cmdline-tools/latest
