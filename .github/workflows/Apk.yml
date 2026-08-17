@@ -1,0 +1,50 @@
+name: Android CI
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
+      - name: Install Android command line tools
+        run: |
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT"
+          curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-10993172_latest.zip" -o cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d cmdline-tools
+          # move into expected layout: cmdline-tools/latest
+          mkdir -p cmdline-tools/latest
+          mv cmdline-tools/cmdline-tools/* cmdline-tools/latest/
+          rm cmdline-tools.zip
+
+      - name: Accept Android licenses and install SDK components
+        run: |
+          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-29" "build-tools;29.0.3"
+        # adjust platforms/build-tools to match your project's compileSdkVersion and AGP requirements
+
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x ./gradlew
+
+      - name: Build debug APK (Gradle wrapper)
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/**/*.apk
